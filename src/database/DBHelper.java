@@ -37,6 +37,22 @@ public class DBHelper {
             return existed;
         }
     }
+    public static boolean searchForUsername(String username) {
+        boolean existed = false;
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "select userId from users where username=? ";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, username);
+            ResultSet results = stmt.executeQuery();
+            existed = results.next();
+            conn.close();
+            return existed;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return existed;
+        }
+    }
 
     public static void insert(String name,String username, String password) {
         try {
@@ -45,7 +61,7 @@ public class DBHelper {
                 System.out.println("User is already existed before !");
             } else {
                 Connection conn = get_DB_Connection();
-                // generate random id from current time millesecond
+
                 String sql_query = "insert into users (name,username,password) values (?,?,?)";
                 PreparedStatement stmt = conn.prepareStatement(sql_query);
                 stmt.setString(1, name);
