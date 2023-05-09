@@ -1,5 +1,6 @@
 package controllers;
 
+import client.Client;
 import com.sun.tools.javac.Main;
 import database.DBHelper;
 import javafx.event.ActionEvent;
@@ -11,18 +12,17 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+
 import javax.swing.*;
 import java.io.IOException;
+import java.net.Socket;
 
 public class SignInController {
-    @FXML
-    private Button loginBtn;
 
+    public static String loggedInName="";
+    public static String loggedInUserName="";
     @FXML
     private PasswordField passwordTF;
-
-    @FXML
-    private Label registerLabel;
 
     @FXML
     private AnchorPane signInPage;
@@ -31,22 +31,35 @@ public class SignInController {
     private TextField usernameTF;
 
     @FXML
-    void onLoginClick(ActionEvent event) {
+    void onLoginClick(ActionEvent event) throws IOException {
+
 
         String username = usernameTF.getText();
         String password = passwordTF.getText();
         if (DBHelper.search(username,password)){
+            loggedInName = DBHelper.getLoggedInName(username);
+            loggedInUserName = username;
+            System.out.println(loggedInName);
             signInPage.getScene().getWindow().hide();
-//            JOptionPane.showMessageDialog(null,"Logged in successfully!");
-            showAlert("Logged in successfully!");
+            FXMLLoader fxmlLoader = new FXMLLoader(SignUpController.class.getResource("/frontend/home.fxml"));
+            Stage stage = new Stage();
+            Scene scene = new Scene(fxmlLoader.load());
+            stage.setTitle("Home!");
+            stage.setScene(scene);
+            stage.setAlwaysOnTop(true);
+            stage.setResizable(false);
+            stage.show();
+
+
+
+
+
+//            showAlert("Logged in successfully!");
         } else if (username.isBlank() || username.isEmpty() || password.isBlank() || password.isEmpty()) {
-//            JOptionPane.showMessageDialog(null,"All fields are required!");
             showAlert("All fields are required!");
         } else {
-//            JOptionPane.showMessageDialog(null,"There is no such user!\n Try again or sign up");
             showAlert("There is no such user!\n Try again or sign up");
         }
-
     }
 
     @FXML

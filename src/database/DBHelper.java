@@ -1,6 +1,9 @@
 package database;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 public class DBHelper {
 
@@ -37,6 +40,7 @@ public class DBHelper {
             return existed;
         }
     }
+
     public static boolean searchForUsername(String username) {
         boolean existed = false;
         try {
@@ -54,7 +58,30 @@ public class DBHelper {
         }
     }
 
-    public static void insert(String name,String username, String password) {
+    public static String getLoggedInName(String username) {
+        boolean existed = false;
+        String name = "";
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "select name from users where username=? ";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, username);
+            ResultSet results = stmt.executeQuery();
+            existed = results.next();
+            name = results.getString("name");
+            conn.close();
+            if (existed) {
+                return name;
+            } else {
+                return "NOBODY";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "NOBODY";
+        }
+    }
+
+    public static void insert(String name, String username, String password) {
         try {
             boolean existed = search(username, password);
             if (existed) {
@@ -76,34 +103,53 @@ public class DBHelper {
         }
     }
 
-    public static void updatePassword(String username, String password) {
+    public static boolean searchForRequest(String req) {
+        boolean existed = false;
         try {
             Connection conn = get_DB_Connection();
-            String sql_query = "update users set password=? where username=?";
+            String sql_query = "select username from requests where requests=? ";
             PreparedStatement stmt = conn.prepareStatement(sql_query);
-            stmt.setString(1, password);
-            stmt.setString(2, username);
-            stmt.executeUpdate();
-            System.out.println("Updating password is done");
+            stmt.setString(1, req);
+            ResultSet results = stmt.executeQuery();
+            existed = results.next();
             conn.close();
+            return existed;
         } catch (SQLException e) {
             e.printStackTrace();
+            return existed;
         }
     }
 
-    public static void deleteUser(String username, String password) {
+    public static boolean searchForContact(String username,String contact) {
+        boolean existed = false;
         try {
-            boolean existed = search(username, password);
-            if (!existed) {
-                System.out.println("User is not founded to be deleted !");
-            } else {
-                Connection conn = get_DB_Connection();
-                String sql_query = "delete from users where username= ? and password=?";
+            Connection conn = get_DB_Connection();
+            String sql_query = "select username from contact_list where contacts=? AND username=? ";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, contact);
+            stmt.setString(2, username);
+            ResultSet results = stmt.executeQuery();
+            existed = results.next();
+            conn.close();
+            return existed;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return existed;
+        }
+    }
+
+    public static void insertNewRequest(String username, String req) {
+        try {
+
+            Connection conn = get_DB_Connection();
+
+            if (!searchForRequest(req)) {
+                String sql_query = "insert into requests (username,requests) values (?,?)";
                 PreparedStatement stmt = conn.prepareStatement(sql_query);
                 stmt.setString(1, username);
-                stmt.setString(2, password);
+                stmt.setString(2, req);
                 stmt.executeUpdate();
-                System.out.println("Deleting is done");
+                System.out.println("Insertion is done");
                 conn.close();
             }
         } catch (SQLException e) {
@@ -111,29 +157,231 @@ public class DBHelper {
         }
     }
 
-    public static void getAllData() {
+    public static void deleteRequest(String username, String req) {
+        try {
+
+            Connection conn = get_DB_Connection();
+
+            if (searchForRequest(req)) {
+                String sql_query = "DELETE FROM requests WHERE username=? AND requests=?";
+                PreparedStatement stmt = conn.prepareStatement(sql_query);
+                stmt.setString(1, username);
+                stmt.setString(2, req);
+                stmt.executeUpdate();
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void insertNewContact(String username, String contact) {
+        try {
+
+            Connection conn = get_DB_Connection();
+
+            if (!searchForContact(username,contact)) {
+                String sql_query = "insert into contact_list (username,contacts) values (?,?)";
+                PreparedStatement stmt = conn.prepareStatement(sql_query);
+                stmt.setString(1, username);
+                stmt.setString(2, contact);
+                stmt.executeUpdate();
+                System.out.println("Insertion is done");
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<String> getSpecificUserRequests(String username) {
+        ArrayList<String> allRequests = new ArrayList<>();
         boolean emptyTable = true;
         try {
             Connection conn = get_DB_Connection();
-            String sql_query = "select * from users";
+            String sql_query = "select username from requests WHERE requests =? ";
             PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, username);
             ResultSet results = stmt.executeQuery();
-            System.out.println("****** Table data *****");
             while (results.next()) {
                 // Retrieve each row data
-                System.out.print("id: " + results.getLong("id"));
-                System.out.print(" , username: " + results.getString("username"));
-                System.out.println(" , password: " + results.getString("password"));
+                allRequests.add(results.getString("username"));
                 emptyTable = false;
             }
             if (emptyTable) {
-                System.out.println("Users table is empty !");
+                ArrayList<String> noUsers = new ArrayList<>();
+                noUsers.add("No requests");
+                return noUsers;
             }
             conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return allRequests;
     }
+
+    public static ArrayList<String> getSpecificUserContacts(String username) {
+        ArrayList<String> allContacts = new ArrayList<>();
+        boolean emptyTable = true;
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "select username from contact_list WHERE contacts =? ";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, username);
+            ResultSet results = stmt.executeQuery();
+            while (results.next()) {
+                // Retrieve each row data
+                allContacts.add(results.getString("username"));
+                emptyTable = false;
+            }
+            if (emptyTable) {
+                ArrayList<String> noUsers = new ArrayList<>();
+                noUsers.add("No contacts");
+                return noUsers;
+            }
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return allContacts;
+    }
+
+
+    public static void insertNewMessage(String username, String message) {
+        try {
+            Connection conn = get_DB_Connection();
+
+
+            String sql_query = "insert into messages (message) values (?) WHERE username=?";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, message);
+            stmt.setString(2, username);
+            stmt.executeUpdate();
+            System.out.println("Insertion is done");
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+//    public static String getUsernameByMessage(String message) {
+//        try {
+//            Connection conn = get_DB_Connection();
+//            String sql_query = "SELECT username from messages WHERE message=?";
+//            PreparedStatement stmt = conn.prepareStatement(sql_query);
+//            stmt.setString(1, message);
+//            ResultSet resultSet = stmt.executeQuery();
+//            if (resultSet.next()) {
+//                resultSet.getString("username");
+//            }
+//            conn.close();
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+    public static ArrayList<String> getMessages() {
+        ArrayList<String> messages = new ArrayList<>();
+        boolean emptyTable = true;
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "SELECT message from messages";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()){
+                messages.add(resultSet.getString("message"));
+                emptyTable = false;
+            }
+            conn.close();
+            if (!emptyTable){
+                return messages;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ArrayList<String> noMessages = new ArrayList<>();
+        noMessages.add("No messages");
+        return noMessages;
+    }
+
+
+    public static ArrayList<String> getAllUsers(String name) {
+        ArrayList<String> allUsers = new ArrayList<>();
+        boolean emptyTable = true;
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "select username from users WHERE name != ? ";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            stmt.setString(1, name);
+            ResultSet results = stmt.executeQuery();
+            while (results.next()) {
+                // Retrieve each row data
+                allUsers.add(results.getString("username"));
+                emptyTable = false;
+            }
+            if (emptyTable) {
+                ArrayList<String> noUsers = new ArrayList<>();
+                noUsers.add("No users yet");
+                return noUsers;
+            }
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return allUsers;
+    }
+
+
+    public static ArrayList<String> getAllUsersForServer() {
+        ArrayList<String> allUsers = new ArrayList<>();
+        boolean emptyTable = true;
+        try {
+            Connection conn = get_DB_Connection();
+            String sql_query = "select username from users";
+            PreparedStatement stmt = conn.prepareStatement(sql_query);
+            ResultSet results = stmt.executeQuery();
+            while (results.next()) {
+                // Retrieve each row data
+                allUsers.add(results.getString("username"));
+                emptyTable = false;
+            }
+            if (emptyTable) {
+                ArrayList<String> noUsers = new ArrayList<>();
+                noUsers.add("No users yet");
+                return noUsers;
+            }
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return allUsers;
+    }
+
+//    public static void getAllData() {
+//        boolean emptyTable = true;
+//        try {
+//            Connection conn = get_DB_Connection();
+//            String sql_query = "select * from users";
+//            PreparedStatement stmt = conn.prepareStatement(sql_query);
+//            ResultSet results = stmt.executeQuery();
+//            System.out.println("****** Table data *****");
+//            while (results.next()) {
+//                // Retrieve each row data
+//                System.out.print("id: " + results.getLong("id"));
+//                System.out.print(" , username: " + results.getString("username"));
+//                System.out.println(" , password: " + results.getString("password"));
+//                emptyTable = false;
+//            }
+//            if (emptyTable) {
+//                System.out.println("Users table is empty !");
+//            }
+//            conn.close();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     /*
     public static void main(String[] args) {

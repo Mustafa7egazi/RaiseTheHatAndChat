@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="singleMessageLayout" prefHeight="502.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SingleChatController">
+   <children>
+      <ScrollPane layoutX="33.0" layoutY="73.0" prefHeight="324.0" prefWidth="735.0">
+         <content>
+            <VBox fx:id="userChatMessagesLayout" prefHeight="324.0" prefWidth="735.0" />
+         </content>
+      </ScrollPane>
+      <Label fx:id="chatUserName" layoutX="33.0" layoutY="23.0" prefHeight="25.0" prefWidth="485.0" text="user name">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TextArea fx:id="messageField" layoutX="33.0" layoutY="421.0" onMouseEntered="#onWritingNewMessage" prefHeight="44.0" prefWidth="472.0" promptText="type message">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </TextArea>
+      <Button layoutX="543.0" layoutY="421.0" mnemonicParsing="false" onAction="#onSendSingleMessage" prefHeight="47.0" prefWidth="132.0" text="send">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <ImageView fitHeight="50.0" fitWidth="40.0" layoutX="728.0" layoutY="16.0" onMouseClicked="#onBackClick" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../imgs/left-arrow.png" />
+         </image>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </ImageView>
+   </children>
+</AnchorPane>
