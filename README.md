@@ -1,2 +1,2 @@
 # RaiseTheHatAndChat
-A multi-threaded server_client-client architecture chat
+A multi-threaded server-client architecture chat
